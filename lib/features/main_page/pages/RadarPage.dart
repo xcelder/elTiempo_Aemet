@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:aemet_radar/features/main_page/pages/presenter/RadarPresenter.dart';
 import 'package:aemet_radar/features/main_page/pages/utils/CacheNetworkImageAspectRatio.dart';
@@ -64,14 +63,14 @@ class RadarPageState extends State<RadarPage> implements RadarView {
   }
 
   void _precacheImages(List<RadarImage> radarImages) async {
-    for (int i = 0; i < radarImages.length; i++) {
-      _preacacheImageAsync(radarImages[i], i);
-    }
+    radarImages.forEach((radarImage) =>
+        precacheImage(Image.network(radarImage.urlImage).image, context));
   }
 
   void _preacacheImageAsync(RadarImage image, int waitSec) async {
-    Timer(Duration(milliseconds: ((waitSec / 4) * 1000).round()), () async{
-      final provider = await networkImageResizedToMaxWidth(image, MAX_WIDTH_IMAGE);
+    Timer(Duration(milliseconds: ((waitSec / 4) * 1000).round()), () async {
+      final provider =
+          await networkImageResizedToMaxWidth(image, MAX_WIDTH_IMAGE);
       precacheImage(provider, context);
     });
   }
@@ -81,6 +80,13 @@ class RadarPageState extends State<RadarPage> implements RadarView {
   }
 
   @override
-  Widget build(BuildContext context) => interfaceBuilder.build(
-      context, state, radarImages, currentImage, isPlaying, onSliderChange, onReload);
+  void onRadarError() {
+    setState(() {
+      state = PageState.ERROR;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => interfaceBuilder.build(context, state,
+      radarImages, currentImage, isPlaying, onSliderChange, onReload);
 }

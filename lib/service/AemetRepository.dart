@@ -2,82 +2,36 @@ import 'dart:convert';
 
 import 'package:aemet_radar/model/LocationOption.dart';
 import 'package:aemet_radar/model/Province.dart';
-import 'package:aemet_radar/model/Provinces.dart';
 import 'package:aemet_radar/model/SearchResult.dart';
 import 'package:aemet_radar/model/RadarImage.dart';
 import 'package:aemet_radar/network/RetroClient.dart';
-import 'package:aemet_radar/service/responses/RadarTimeLinesResponse.dart';
 import 'package:html/parser.dart' as htmlParser;
-import 'package:intl/intl.dart';
+import 'package:aemet_radar/values/Strings.dart';
+import 'package:aemet_radar/utils/XORCipher.dart';
+import 'package:aemet_radar/service/parser/RadarTimeLinesParser.dart' as RadarTimeLineParser;
 
 class AemetRepository {
   final client = RetroClient();
   final environment = "aemet.es";
 
   Stream<List<RadarImage>> getRadarImagesFromNetwork(Province province) {
-    String url;
+    String url = "/es/apps/radar";
+    String param = "$radarPrefix${province.code}$radarSeparator$token";
 
-    switch (province.provinceType) {
-      case Provinces.Peninsula:
-        url = "/es/api-eltiempo/radar/timeline/compo/PB";
-        break;
-      case Provinces.LasPalmas:
-        url = "/es/api-eltiempo/radar/timeline/PPI/CAN";
-        break;
-      default:
-        url = "/es/api-eltiempo/radar/timeline/PPI/PB";
-    }
+//    String fullUrl =
 
-    final uri = Uri.http(environment, url);
-    return client.get(uri).asStream().map((response) {
-      final List<dynamic> jsonBody = jsonDecode(response.body);
-      final List<RadarImage> radarImages = RadarTimeLinesResponse.fromJson(
-              jsonBody.first as Map<String, dynamic>)
-          .elementos
-          .where((element) => (province.provinceType != Provinces.Peninsula &&
-                  province.provinceType != Provinces.LasPalmas)
-              ? element.radar == province.code
-              : true)
-          .map((element) {
-        final originalFormat =
-            DateFormat("yyyy-MM-DD'T'HH:mm:sszzz"); //2020-04-12T15:00:00+02:00
-        final dateTime = originalFormat.parse(element.fecha);
+//    final uri = Uri.http(environment, url, { radarParamName : encode(param) });
+    final uri = Uri.parse("https://www.$environment$url?$radarParamName=${encode(param)}");
+    final headers = { radarHeaderUserAgent : decode(userAgent) };
 
-        String imageEndpoint;
+    return client.get(uri, headers: headers)
+        .asStream()
+        .map((response) {
+      final Map<String, dynamic> jsonBody = jsonDecode(response.body);
 
-        if (province.provinceType == Provinces.Peninsula) {
-          imageEndpoint =
-              "http://www.aemet.es/es/api-eltiempo/radar/imagen-radar/compo/";
-        } else {
-          imageEndpoint =
-              "http://www.aemet.es/es/api-eltiempo/radar/imagen-radar/PPI/";
-        }
-
-        final imageUrl = "$imageEndpoint${element.fichero}";
-
-        return RadarImage(imageUrl, dateTime);
-      }).toList();
+      final radarImages = RadarTimeLineParser.parse(jsonBody);
 
       radarImages.sort((first, second) => first.hour.compareTo(second.hour));
-
-//      final document = htmlParser.parse(response.body);
-//      final elements = document.querySelectorAll("div img[class=\"lazyOwl\"]");
-//
-//      elements.forEach((element) {
-//        final src = element.attributes["data-src"];
-//        final alt = element.attributes["alt"];
-//        if (src != null && src.isNotEmpty) {
-//          RegExp regExp = new RegExp(
-//            r"([0-1][0-9]:[0-5][0-9]|[2][0-3]:[0-5][0-9])",
-//            caseSensitive: false,
-//          );
-//
-//          String hourString = regExp.stringMatch(alt).toString();
-//          final image = Image.network("http://$environment$src").image;
-//
-//          radarImages.add(RadarImage(image, hourString));
-//        }
-//      });
 
       return radarImages;
     });

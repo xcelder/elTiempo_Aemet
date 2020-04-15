@@ -16,6 +16,7 @@ class RadarPresenter {
       view.onRadarImagesLoaded(radarImages);
     }).onError((error) {
       print("error: $error");
+      view.onRadarError();
     });
   }
 }

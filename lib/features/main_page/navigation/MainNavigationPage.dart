@@ -1,8 +1,8 @@
 import 'package:aemet_radar/features/main_page/pages/RadarPage.dart';
 import 'package:aemet_radar/model/Province.dart';
-import 'package:aemet_radar/model/Provinces.dart';
+import 'package:aemet_radar/values/Provinces.dart';
 import 'package:flutter/material.dart';
-import 'package:aemet_radar/model/ProvincesWithCodes.dart';
+import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final title = "Radar";

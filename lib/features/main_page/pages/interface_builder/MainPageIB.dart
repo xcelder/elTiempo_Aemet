@@ -1,6 +1,6 @@
 import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
-import 'package:aemet_radar/model/Provinces.dart';
-import 'package:aemet_radar/model/ProvincesWithCodes.dart';
+import 'package:aemet_radar/values/Provinces.dart';
+import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:aemet_radar/values/AppColors.dart';
 import 'package:aemet_radar/widgets/Backdrop.dart';
 import 'package:flutter/material.dart';
