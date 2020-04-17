@@ -86,7 +86,7 @@ Widget _buildContent(
           left: 0,
           right: 0,
           child: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
+            padding: const EdgeInsets.all(10.0),
             child: _buildSlider(
               context,
               radarImages.length - 1,
@@ -161,7 +161,7 @@ Widget _buildSlider(
   Function(double value) onSliderChange,
 ) =>
     Card(
-      elevation: 5,
+      elevation: 7,
       child: Row(
         children: <Widget>[
           Padding(

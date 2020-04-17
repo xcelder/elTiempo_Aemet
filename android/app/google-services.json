@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "510406018774",
+    "firebase_url": "https://el-tiempo-aemet.firebaseio.com",
+    "project_id": "el-tiempo-aemet",
+    "storage_bucket": "el-tiempo-aemet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510406018774:android:fb41dc6ff2c9220020eb77",
+        "android_client_info": {
+          "package_name": "com.grilledcroissants.aemet_radar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "510406018774-vgsg5io0fp9h6l3s0habrc36eak955sa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNLmB3UllJVo3sM4CLtIYIYcY4-Qw5Nhg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "510406018774-vgsg5io0fp9h6l3s0habrc36eak955sa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

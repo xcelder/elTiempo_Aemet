@@ -1,4 +1,5 @@
 import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/values/Provinces.dart';
 import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:aemet_radar/values/AppColors.dart';
@@ -7,7 +8,14 @@ import 'package:flutter/material.dart';
 
 import '../RadarPage.dart';
 
-Widget build(BuildContext context, BackdropController bdController, Stream<CurrentWeatherState> cwStream) =>
+Widget build(
+  BuildContext context,
+  GlobalKey<RadarPageState> radarKey,
+  BackdropController bdController,
+  Stream<CurrentWeatherState> cwStream,
+  Province currentProvince,
+  Function(Province province) onSelectProvince,
+) =>
     Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -17,15 +25,25 @@ Widget build(BuildContext context, BackdropController bdController, Stream<Curre
             colors: [nightSky, blueSky],
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(
-              height: 8,
-            ),
-            _buildCurrentWeather(cwStream),
-            Expanded(child: _buildBackdrop(bdController)),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                flex: 25,
+                child: _buildCurrentWeather(cwStream),
+              ),
+              Expanded(
+                  flex: 75,
+                  child: _buildBackdrop(
+                    radarKey,
+                    bdController,
+                    currentProvince,
+                    onSelectProvince,
+                  )),
+            ],
+          ),
         ),
       ),
     );
@@ -47,8 +65,6 @@ Widget _buildCurrentWeather(Stream<CurrentWeatherState> cwStream) =>
         final whiteText = TextStyle(color: Colors.white);
 
         return Container(
-          height: 170,
-          width: MediaQuery.of(context).size.width,
           child: Padding(
             padding: const EdgeInsets.all(18.0),
             child: Row(
@@ -73,7 +89,7 @@ Widget _buildCurrentWeather(Stream<CurrentWeatherState> cwStream) =>
                           style: whiteText.copyWith(fontSize: 18),
                         ),
                         SizedBox(
-                          height: 12,
+                          height: 8,
                         ),
                         Text(
                           "prob. precipitación: $rainProbability%",
@@ -162,10 +178,26 @@ Widget _buildCurrentWeather(Stream<CurrentWeatherState> cwStream) =>
 //endregion
 
 //region BACKDROP
-Widget _buildBackdrop(BackdropController bdController) {
+Widget _buildBackdrop(
+  GlobalKey<RadarPageState> radarKey,
+  BackdropController bdController,
+  Province currentProvince,
+  Function(Province province) onSelectProvince,
+) {
   return Backdrop(
     controller: bdController,
-    frontLayer: Container(
+    frontLayer: _buildFrontLayer(radarKey, bdController, currentProvince),
+    backLayer: _buildBackLayer(currentProvince, onSelectProvince),
+    frontAction: Icon(Icons.menu),
+  );
+}
+
+Widget _buildFrontLayer(
+  GlobalKey<RadarPageState> radarKey,
+  BackdropController bdController,
+  Province currentProvince,
+) =>
+    Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -190,8 +222,9 @@ Widget _buildBackdrop(BackdropController bdController) {
                         Padding(
                           padding: const EdgeInsets.only(left: 36),
                           child: Text(
-                            "Palencia",
-                            style: TextStyle(fontSize: 18, color: Colors.black45),
+                            currentProvince.name,
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black45),
                           ),
                         ),
                       ],
@@ -201,14 +234,14 @@ Widget _buildBackdrop(BackdropController bdController) {
                     padding: const EdgeInsets.only(right: 24.0),
                     child: Center(
                       child: bdController.isOpen()
-                      ? Icon(
-                        Icons.arrow_drop_up,
-                        size: 30,
-                        )
-                      : Icon(
-                        Icons.arrow_drop_down,
-                        size: 30,
-                        ),
+                          ? Icon(
+                              Icons.arrow_drop_down,
+                              size: 30,
+                            )
+                          : Icon(
+                              Icons.arrow_drop_up,
+                              size: 30,
+                            ),
                     ),
                   )
                 ],
@@ -219,19 +252,45 @@ Widget _buildBackdrop(BackdropController bdController) {
             height: 12,
           ),
           Expanded(
-            child: RadarPage(provinces.firstWhere((province) => province.provinceType == Provinces.Palencia)),
-          ),
-          Container(
-            color: Colors.white,
-            child: Center(
-              child: Icon(Icons.keyboard_arrow_up, size: 30,),
+            child: RadarPage(
+              currentProvince,
+              key: radarKey,
             ),
-          )
+          ),
         ],
       ),
-    ),
-    backLayer: Container(),
-    frontAction: Icon(Icons.menu),
-  );
-}
+    );
+
+Widget _buildBackLayer(Province currentProvince,
+        Function(Province province) onSelectProvince) =>
+    ListView(
+      padding: const EdgeInsets.only(bottom: 120),
+      children: provinces.map((province) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+          child: Card(
+            elevation: 0,
+            color: (province == currentProvince)
+                ? Colors.white30
+                : Colors.transparent,
+            child: InkWell(
+              onTap: () => onSelectProvince(province),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 10),
+                child: Center(
+                  child: Text(
+                    province.name,
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
 //endregion
