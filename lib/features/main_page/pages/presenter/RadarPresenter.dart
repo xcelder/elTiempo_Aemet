@@ -1,3 +1,4 @@
+import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/service/AemetRepository.dart';
 
 import '../RadarView.dart';
@@ -8,13 +9,14 @@ class RadarPresenter {
 
   RadarPresenter(this.view, this.repository);
 
-  void loadRadarImagesOf(String radarCode) {
+  void loadRadarImagesOf(Province province) {
     repository
-        .getRadarImagesFromNetwork(radarCode)
+        .getRadarImagesFromNetwork(province)
         .listen((radarImages) {
       view.onRadarImagesLoaded(radarImages);
     }).onError((error) {
       print("error: $error");
+      view.onRadarError();
     });
   }
 }

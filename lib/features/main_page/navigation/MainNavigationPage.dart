@@ -1,6 +1,8 @@
 import 'package:aemet_radar/features/main_page/pages/RadarPage.dart';
+import 'package:aemet_radar/model/Province.dart';
+import 'package:aemet_radar/values/Provinces.dart';
 import 'package:flutter/material.dart';
-import 'package:aemet_radar/model/Provinces.dart';
+import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final title = "Radar";
@@ -12,17 +14,17 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   GlobalKey<RadarPageState> radarKey = GlobalKey();
 
-  String provinceCode = "vd";
+  Province currentProvince = provinces.firstWhere((province) => province.provinceType == Provinces.Palencia);
 
   @override
   void initState() {
     super.initState();
   }
 
-  void onProvinceSelected(String value) {
+  void onProvinceSelected(Province value) {
     setState(() {
-      provinceCode = value;
-      radarKey.currentState.update(provinceCode);
+      currentProvince = value;
+      radarKey.currentState.update(currentProvince);
     });
   }
 
@@ -40,10 +42,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: DropdownButton(
-                    value: provinceCode,
-                    items: provinces.entries.map((province) => DropdownMenuItem(
-                      child: Text(province.value),
-                      value: province.key,
+                    value: currentProvince,
+                    items: provinces.map((province) => DropdownMenuItem(
+                      child: Text(province.name),
+                      value: province,
                     )).toList(),
                     onChanged: (value) {
                       onProvinceSelected(value);
@@ -60,11 +62,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           IconButton(
               icon: Icon(Icons.refresh),
               onPressed: () {
-                radarKey.currentState.update(provinceCode);
+                radarKey.currentState.update(currentProvince);
               }),
         ],
       ),
-      body: RadarPage(provinceCode, key: radarKey),
+      body: RadarPage(currentProvince, key: radarKey),
     );
   }
 }

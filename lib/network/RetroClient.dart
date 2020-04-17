@@ -5,14 +5,23 @@ import 'dart:convert';
 class RetroClient {
   final HttpClient _client = HttpClient();
 
-  Future<RetroResponse> get(Uri uri) async {
-    final request = await _client.getUrl(uri);
-    return _executeRequest(request);
+  Future<RetroResponse> get(Uri uri, {Map<String, String> headers}) async {
+    final request = _client.getUrl(uri);
+
+    return _executeRequest(request, headers: headers);
   }
 
-  Future<RetroResponse> _executeRequest(HttpClientRequest request) async {
+  Future<RetroResponse> _executeRequest(Future<HttpClientRequest> request,
+      {Map<String, String> headers}) async {
     final completer = new Completer<RetroResponse>();
-    final response = await request.close();
+
+    final response = await request.then((request) {
+      if (headers != null && headers.isNotEmpty) {
+        headers.forEach((name, value) => request.headers.add(name, value));
+      }
+
+      return request.close();
+    });
 
     StringBuffer responseBody = StringBuffer();
 

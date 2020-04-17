@@ -12,6 +12,11 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="aemet_radar"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data
+            android:name="com.mapbox.token"
+            android:value="pk.eyJ1IjoieGNlbGRlciIsImEiOiJjazh1NWV0NXYwMWY5M2dtem9iMW4xNm03In0.fti5oBiGMK3FYibeRfP7Rg"/>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

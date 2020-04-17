@@ -268,7 +268,6 @@ class _BackdropState extends State<Backdrop>
   }
 
   void _toggleFrontLayer() {
-
     _controller.fling(velocity: isOpen() ? -2.0 : 2.0);
   }
 

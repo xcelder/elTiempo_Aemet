@@ -1,42 +1,37 @@
+import 'dart:convert';
+
 import 'package:aemet_radar/model/LocationOption.dart';
-import 'package:aemet_radar/model/LocationWeather.dart';
+import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/model/SearchResult.dart';
-import 'package:flutter/material.dart';
-import 'package:html/parser.dart' as htmlParser;
 import 'package:aemet_radar/model/RadarImage.dart';
 import 'package:aemet_radar/network/RetroClient.dart';
+import 'package:html/parser.dart' as htmlParser;
+import 'package:aemet_radar/values/Strings.dart';
+import 'package:aemet_radar/utils/XORCipher.dart';
+import 'package:aemet_radar/service/parser/RadarTimeLinesParser.dart' as RadarTimeLineParser;
 
 class AemetRepository {
   final client = RetroClient();
   final environment = "aemet.es";
 
-  Stream<List<RadarImage>> getRadarImagesFromNetwork(String radarCode) {
-    final url = radarCode == "ALL"
-        ? "/es/eltiempo/observacion/radar?w=0"
-        : "/es/eltiempo/observacion/radar?w=1&p=$radarCode";
+  Stream<List<RadarImage>> getRadarImagesFromNetwork(Province province) {
+    String url = "/es/apps/radar";
+    String param = "$radarPrefix${province.code}$radarSeparator$token";
 
-    final uri = Uri.http(environment, url);
-    return client.get(uri).asStream().map((response) {
-      final List<RadarImage> radarImages = List<RadarImage>();
+//    String fullUrl =
 
-      final document = htmlParser.parse(response.body);
-      final elements = document.querySelectorAll("div img[class=\"lazyOwl\"]");
+//    final uri = Uri.http(environment, url, { radarParamName : encode(param) });
+    final uri = Uri.parse("https://www.$environment$url?$radarParamName=${encode(param)}");
+    final headers = { radarHeaderUserAgent : decode(userAgent) };
 
-      elements.forEach((element) {
-        final src = element.attributes["data-src"];
-        final alt = element.attributes["alt"];
-        if (src != null && src.isNotEmpty) {
-          RegExp regExp = new RegExp(
-            r"([0-1][0-9]:[0-5][0-9]|[2][0-3]:[0-5][0-9])",
-            caseSensitive: false,
-          );
+    return client.get(uri, headers: headers)
+        .asStream()
+        .map((response) {
+      final Map<String, dynamic> jsonBody = jsonDecode(response.body);
 
-          String hourString = regExp.stringMatch(alt).toString();
-          final image = Image.network("http://$environment$src").image;
+      final radarImages = RadarTimeLineParser.parse(jsonBody);
 
-          radarImages.add(RadarImage(image, hourString));
-        }
-      });
+      radarImages.sort((first, second) => first.hour.compareTo(second.hour));
 
       return radarImages;
     });
@@ -48,8 +43,9 @@ class AemetRepository {
     final uri = Uri.http(environment, url);
     return client.get(uri).asStream().map((response) {
       final document = htmlParser.parse(response.body);
-      final tabLinks =
-      document.querySelector("ul[class=\"nav_pestanha\"]")?.querySelectorAll("a");
+      final tabLinks = document
+          .querySelector("ul[class=\"nav_pestanha\"]")
+          ?.querySelectorAll("a");
 
       bool didFound = false;
       List<LocationOption> options = [];
@@ -96,7 +92,7 @@ class AemetRepository {
     return client.get(uri).asStream().map((response) {
       final document = htmlParser.parse(response.body);
       final xmlLink = document.querySelector("div[class*=\"enlace_xml\"] a");
-      
+
       if (xmlLink != null) {
         return xmlLink.attributes["href"];
       } else {
@@ -121,6 +117,4 @@ class AemetRepository {
       }
     });
   }
-
-
 }

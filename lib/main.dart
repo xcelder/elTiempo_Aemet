@@ -1,3 +1,5 @@
+import 'package:aemet_radar/features/main_page/pages/MainPage.dart';
+import 'package:aemet_radar/model/LocationWeather.dart';
 import 'package:aemet_radar/values/AppColors.dart';
 import 'package:flutter/material.dart';
 
@@ -33,12 +35,13 @@ class MyApp extends StatelessWidget {
               fontFamily: "ProductSans",
             ),
           ),
+          accentTextTheme: TextTheme(body2: TextStyle(color: Colors.white)),
           inputDecorationTheme: InputDecorationTheme(
               border: OutlineInputBorder(),
               labelStyle: TextStyle(fontSize: 24, color: Colors.white)),
           primarySwatch: Colors.lightBlue,
           accentColor: nightSky),
-      home: MainSearchPage(),
+      home: MainPage(LocationWeather("47187", "", "")),
     );
   }
 }

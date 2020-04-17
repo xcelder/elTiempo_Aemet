@@ -1,9 +1,25 @@
-import 'package:flutter/material.dart';
 
 class RadarImage {
 
-  final ImageProvider image;
-  final String hour;
+  final String urlImage;
+  final DateTime hour;
 
-  RadarImage(this.image, this.hour);
+  ImageSize imageSize;
+
+  RadarImage(this.urlImage, this.hour);
+
+  void setImageSize(ImageSize imageSize) {
+    this.imageSize = imageSize;
+  }
+
+  bool isAlreadyLoaded() => imageSize != null;
+}
+
+class ImageSize {
+
+  final int height;
+  final int width;
+
+  ImageSize(this.height, this.width);
+
 }
