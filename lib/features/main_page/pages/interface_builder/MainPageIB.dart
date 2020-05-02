@@ -37,9 +37,9 @@ Widget build(
             builder: (context, snapshot) => AnimatedSwitcher(
               duration: Duration(seconds: 1),
               transitionBuilder: (child, animation) {
-                return SizeTransition(
+                return FadeTransition(
                   child: child,
-                  sizeFactor: animation,
+                  opacity: animation,
                 );
               },
               child: _buildWeatherForState(
