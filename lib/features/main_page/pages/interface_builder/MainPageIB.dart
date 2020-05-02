@@ -215,36 +215,33 @@ Widget _buildCurrentWeather(FullPrediction hourlyPrediction) {
                     children: <Widget>[
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Center(
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.arrow_upward,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
-                                Text(
-                                  "$maxTempºC",
-                                  style: whiteText,
-                                )
-                              ],
-                            ),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.arrow_upward,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              Text(
+                                "$maxTempºC",
+                                style: whiteText,
+                              )
+                            ],
                           ),
-                          Center(
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.arrow_downward,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
-                                Text(
-                                  "$minTempºC",
-                                  style: whiteText,
-                                )
-                              ],
-                            ),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.arrow_downward,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              Text(
+                                "$minTempºC",
+                                style: whiteText,
+                              )
+                            ],
                           ),
                         ],
                       ),
