@@ -7,6 +7,7 @@ import 'package:aemet_radar/values/AppColors.dart';
 import 'package:aemet_radar/values/Strings.dart';
 import 'package:aemet_radar/widgets/Backdrop.dart';
 import 'package:aemet_radar/widgets/CloudLoading.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:aemet_radar/values/WeatherIconCodes.dart' as WeatherIcons;
 import 'package:flutter_svg/flutter_svg.dart';
@@ -167,9 +168,10 @@ Widget _buildCurrentWeather(FullPrediction hourlyPrediction) {
                   SizedBox(
                     height: 12,
                   ),
-                  Text(
+                  AutoSizeText(
                     town,
                     style: whiteText.copyWith(fontSize: 32),
+                    maxLines: 1,
                   ),
                   Text(
                     "($province)",
