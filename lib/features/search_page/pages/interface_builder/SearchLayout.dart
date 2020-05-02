@@ -97,7 +97,7 @@ class SearchLayout {
       itemSorter: (a, b) => 0,
       itemFilter: (suggestion, input) {
         final suggestionLC = suggestion.name.toLowerCase();
-        final inputLC = input.toLowerCase();
+        final inputLC = input.toLowerCase().trim();
 
         return suggestionLC.startsWith(inputLC);
       },
