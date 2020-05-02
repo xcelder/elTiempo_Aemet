@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:aemet_radar/features/main_page/pages/MainPageView.dart';
-import 'package:aemet_radar/features/main_page/pages/preferences/RadarPreferences.dart';
+import 'package:aemet_radar/preferences/RadarPreferences.dart';
 import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
 import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
 import 'package:aemet_radar/model/Province.dart';

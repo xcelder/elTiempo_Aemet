@@ -31,10 +31,10 @@ class _MainSearchPageState extends State<MainSearchPage> {
   }
 
   void onNavigateToMainPage(LocationOption locationOption) {
-    Navigator.of(context).push(MaterialPageRoute(
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
       builder: (context) => MainPageViewState(
         StreamController<CurrentWeatherState>(),
-        child: MainPage(locationOption),
+        child: MainPage(locationOption.locationCode),
       ),
     ));
   }

@@ -25,22 +25,5 @@ class SearchPresenter {
 
   void obtainWeatherDataForLocation(String locationCode) {
     viewState.updateState(Busy());
-
-
-//    repository.searchLocation(query).listen((result) {
-//      if (result.didFound) {
-//        _stateController.sink.add(Busy());
-//        getWeatherDataOfLocation(result.code);
-//      } else {
-//        if (result.options.length > 0) {
-//          _stateController.sink.add(OptionsResult(result.options));
-//        } else {
-//          _stateController.sink
-//              .add(Error("No se han encontrado resultados para su búsqueda"));
-//        }
-//      }
-//    }, onError: (e) {
-//      _stateController.sink.add(Error("Datos no disponibles"));
-//    });
   }
 }

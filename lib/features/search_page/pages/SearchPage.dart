@@ -1,6 +1,7 @@
 import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
 import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
 import 'package:aemet_radar/model/LocationOption.dart';
+import 'package:aemet_radar/preferences/WeatherTownPreferences.dart';
 import 'package:flutter/material.dart';
 import 'injector/SearchInjector.dart';
 import 'interface_builder/SearchLayout.dart';
@@ -41,8 +42,16 @@ class _SearchPageState extends State<SearchPage>
     super.didChangeDependencies();
   }
 
-  void onOptionSelected(LocationOption option) {
+  void onOptionSelected(LocationOption option) async {
+    final preferences = await WeatherTownPreferences.instance();
+    preferences.saveWeatherTown(option.locationCode);
     widget.router.navigateToMainPage(option);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override

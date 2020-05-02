@@ -3,6 +3,7 @@ import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _provinceRadarKey = "key:ProvinceRadar";
+const String _weatherTownKey = "key:WeatherTown";
 
 class RadarPreferences {
   final SharedPreferences preferences;

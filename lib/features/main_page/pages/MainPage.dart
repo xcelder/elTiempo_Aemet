@@ -12,9 +12,9 @@ import 'package:aemet_radar/features/main_page/pages/injector/MainPageInjector.d
     as injector;
 
 class MainPage extends StatefulWidget {
-  final LocationOption locationOption;
+  final String locationCode;
 
-  MainPage(this.locationOption);
+  MainPage(this.locationCode);
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -32,7 +32,7 @@ class _MainPageState extends State<MainPage> implements MainPageView {
     presenter =
         injector.injectMainPagePresenter(this, MainPageViewState.of(context));
     presenter.loadPreferredProvince();
-    presenter.loadWeatherData(widget.locationOption.locationCode);
+    presenter.loadWeatherData(widget.locationCode);
 
     super.didChangeDependencies();
   }
