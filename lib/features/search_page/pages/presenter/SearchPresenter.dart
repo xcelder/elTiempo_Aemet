@@ -1,67 +1,46 @@
 import 'dart:async';
 
-import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
-import 'package:aemet_radar/model/LocationWeather.dart';
+import 'package:aemet_radar/features/main_page/pages/utils/TownProvider.dart' as TownProvider;
+import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
 import 'package:aemet_radar/service/AemetRepository.dart';
 
 import '../../SearchState.dart';
 
 class SearchPresenter {
   final AemetRepository repository;
-  final SearchRouter router;
 
-  // ignore: close_sinks
-  final _stateController = StreamController<SearchState>();
-  Stream<SearchState> get stateStream => _stateController.stream;
+  final SearchViewState viewState;
 
-  SearchPresenter(this.repository, this.router);
+  SearchPresenter(this.repository, this.viewState);
 
-  void searchLocation(String query) {
-    _stateController.sink.add(Busy());
-
-    repository.searchLocation(query).listen((result) {
-      if (result.didFound) {
-        _stateController.sink.add(Busy());
-        getWeatherDataOfLocation(result.code);
-      } else {
-        if (result.options.length > 0) {
-          _stateController.sink.add(OptionsResult(result.options));
-        } else {
-          _stateController.sink
-              .add(Error("No se han encontrado resultados para su búsqueda"));
-        }
-      }
-    }, onError: (e) {
-      _stateController.sink.add(Error("Datos no disponibles"));
-    });
+  void loadProvinceData() async {
+    showLoading();
+    final provinceData = await TownProvider.provideLocations();
+    viewState.updateState(OptionsResult(provinceData));
   }
 
-  void getWeatherDataOfLocation(String locationCode) async {
-    String weekXmlLink = "";
-    String hourlyXmlLink = "";
-
-    try {
-      weekXmlLink = await repository.getWeekXmlLink(locationCode).first;
-      hourlyXmlLink = await repository.getHourlyXmlLink(locationCode).first;
-    } catch(e) {}
-
-    if (weekXmlLink == null ||
-        weekXmlLink.isEmpty ||
-        hourlyXmlLink == null ||
-        hourlyXmlLink.isEmpty) {
-      _stateController.sink.add(Error("Datos no disponibles"));
-    } else {
-      router.navigateToMainPage(
-        LocationWeather(
-          locationCode,
-          weekXmlLink,
-          hourlyXmlLink,
-        ),
-      );
-    }
+  void showLoading() {
+    viewState.updateState(Busy());
   }
 
-  void dispose() {
-    _stateController.close();
+  void obtainWeatherDataForLocation(String locationCode) {
+    viewState.updateState(Busy());
+
+
+//    repository.searchLocation(query).listen((result) {
+//      if (result.didFound) {
+//        _stateController.sink.add(Busy());
+//        getWeatherDataOfLocation(result.code);
+//      } else {
+//        if (result.options.length > 0) {
+//          _stateController.sink.add(OptionsResult(result.options));
+//        } else {
+//          _stateController.sink
+//              .add(Error("No se han encontrado resultados para su búsqueda"));
+//        }
+//      }
+//    }, onError: (e) {
+//      _stateController.sink.add(Error("Datos no disponibles"));
+//    });
   }
 }

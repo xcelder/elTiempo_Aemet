@@ -1,6 +1,7 @@
-import 'package:aemet_radar/features/main_page/pages/preferences/RadarPreferences.dart';
+import 'package:aemet_radar/features/main_page/pages/MainPageView.dart';
 import 'package:aemet_radar/features/main_page/pages/presenter/MainPagePresenter.dart';
-import 'package:aemet_radar/model/LocationWeather.dart';
+import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/model/LocationOption.dart';
 import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:aemet_radar/widgets/Backdrop.dart';
@@ -10,20 +11,16 @@ import 'package:aemet_radar/features/main_page/pages/interface_builder/MainPageI
 import 'package:aemet_radar/features/main_page/pages/injector/MainPageInjector.dart'
     as injector;
 
-import 'RadarPage.dart';
-
 class MainPage extends StatefulWidget {
-  final LocationWeather locationWeather;
+  final LocationOption locationOption;
 
-  MainPage(this.locationWeather);
+  MainPage(this.locationOption);
 
   @override
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
-  GlobalKey<RadarPageState> radarKey = GlobalKey();
-
+class _MainPageState extends State<MainPage> implements MainPageView {
   MainPagePresenter presenter;
 
   BackdropController bdController = BackdropController();
@@ -31,45 +28,40 @@ class _MainPageState extends State<MainPage> {
   Province currentProvince = provinces.first;
 
   @override
-  void initState() {
-    presenter = injector.injectMainPagePresenter();
-    loadPreferredProvince();
-    super.initState();
+  void didChangeDependencies() {
+    presenter =
+        injector.injectMainPagePresenter(this, MainPageViewState.of(context));
+    presenter.loadPreferredProvince();
+    presenter.loadWeatherData(widget.locationOption.locationCode);
+
+    super.didChangeDependencies();
   }
 
-  void loadPreferredProvince() async {
-    final radarPreferences = await RadarPreferences.instance();
-    final preferredRadar = radarPreferences.retrievePreferredProvinceRadar();
-    updateProvince(preferredRadar);
-  }
-
-  void savePreferredProvince(Province selectedProvince) async {
-    final radarPreferences = await RadarPreferences.instance();
-    radarPreferences.saveProvinceRadar(selectedProvince);
-  }
-
-  void updateProvince(Province selectedProvince) {
+  @override
+  void onPreferredProvinceLoaded(Province selectedProvince) {
     setState(() {
       currentProvince = selectedProvince;
-      radarKey.currentState.update(currentProvince);
     });
   }
 
   void onProvinceSelected(Province selectedProvince) {
-    savePreferredProvince(selectedProvince);
+    presenter.savePreferredProvince(selectedProvince);
     setState(() {
       currentProvince = selectedProvince;
-      radarKey.currentState.update(currentProvince);
       bdController.toggleFrontLayer();
     });
   }
 
   @override
+  void dispose() {
+    presenter.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => mainPageIB.build(
         context,
-        radarKey,
         bdController,
-        presenter.currentWeatherStateStream,
         currentProvince,
         onProvinceSelected,
       );

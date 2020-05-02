@@ -1,11 +1,11 @@
-import 'package:aemet_radar/model/LocationWeather.dart';
+import 'package:aemet_radar/model/LocationOption.dart';
 
 class SearchRouter {
-  final Function(LocationWeather) onRoute;
+  final Function(LocationOption) onRoute;
 
   SearchRouter(this.onRoute);
 
-  void navigateToMainPage(LocationWeather locationWeather) {
-    onRoute(locationWeather);
+  void navigateToMainPage(LocationOption locationOption) {
+    onRoute(locationOption);
   }
 }

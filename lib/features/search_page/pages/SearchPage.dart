@@ -1,10 +1,10 @@
 import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
+import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
 import 'package:aemet_radar/model/LocationOption.dart';
 import 'package:flutter/material.dart';
 import 'injector/SearchInjector.dart';
+import 'interface_builder/SearchLayout.dart';
 import 'presenter/SearchPresenter.dart';
-import 'package:aemet_radar/features/search_page/pages/interface_builder/SearchIB.dart'
-    as searchIB;
 
 class SearchPage extends StatefulWidget {
   final SearchRouter router;
@@ -26,37 +26,30 @@ class _SearchPageState extends State<SearchPage>
 
   @override
   void initState() {
-    presenter = injectSearchPresenter(widget.router);
-
     _animationController =
         AnimationController(duration: Duration(milliseconds: 600), vsync: this);
     _animation = IntTween(begin: 60, end: 30).animate(_animationController);
     super.initState();
   }
 
-  void onSearch() {
-    FocusScope.of(context).requestFocus(FocusNode());
-    if (!_animationController.isCompleted) {
-      _animationController.forward();
-    }
-    presenter.searchLocation(searchController.text);
+  @override
+  void didChangeDependencies() {
+    presenter = injectSearchPresenter(SearchViewState.of(context));
+
+    presenter.loadProvinceData();
+
+    super.didChangeDependencies();
   }
 
-  void onOptionSelected(LocationOption option) =>
-    presenter.getWeatherDataOfLocation(option.locationCode);
-
-  @override
-  Widget build(BuildContext context) => searchIB.build(
-        presenter.stateStream,
-        _animation,
-        searchController,
-        onSearch,
-        onOptionSelected,
-      );
-
-  @override
-  void dispose() {
-    presenter.dispose();
-    super.dispose();
+  void onOptionSelected(LocationOption option) {
+    widget.router.navigateToMainPage(option);
   }
+
+  @override
+  Widget build(BuildContext context) => SearchLayout().build(
+    context,
+    _animation,
+    searchController,
+    onOptionSelected,
+  );
 }

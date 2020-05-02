@@ -112,45 +112,6 @@ Widget _buildPhotoView(RadarImage overlayImage) => PhotoView(
       gaplessPlayback: true,
     );
 
-Widget _buildMap(RadarImage overlayImage) => FutureBuilder<ImageProvider>(
-      future: networkImageResizedToMaxWidth(overlayImage, MAX_WIDTH_IMAGE),
-      builder: (BuildContext context, AsyncSnapshot<ImageProvider> snapshot) {
-        if (!snapshot.hasData) {
-          return _buildLoading();
-        } else {
-          return FlutterMap(
-            options: MapOptions(
-              center: LatLng(42.0095500, -4.5240600),
-              zoom: 7,
-              minZoom: 6,
-              maxZoom: 9,
-            ),
-            layers: [
-              TileLayerOptions(
-                urlTemplate: "https://api.tiles.mapbox.com/v4/"
-                    "{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}",
-                additionalOptions: {
-                  'accessToken':
-                      'pk.eyJ1IjoieGNlbGRlciIsImEiOiJjazh1NWV0NXYwMWY5M2dtem9iMW4xNm03In0.fti5oBiGMK3FYibeRfP7Rg',
-                  'id': 'mapbox.streets',
-                },
-              ),
-              OverlayImageLayerOptions(overlayImages: [
-                OverlayImage(
-                  opacity: 0.9,
-                  bounds: LatLngBounds(
-                    LatLng(33.80094852216654, 4.391150189144839),
-                    LatLng(50.155888099999984, -13.600951899999998),
-                  ),
-                  imageProvider: snapshot.data,
-                )
-              ])
-            ],
-          );
-        }
-      },
-    );
-
 Widget _buildSlider(
   BuildContext context,
   int length,

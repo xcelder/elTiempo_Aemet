@@ -1,32 +1,38 @@
 import 'dart:convert';
+import 'dart:math';
 
-import 'package:aemet_radar/model/LocationOption.dart';
+import 'package:aemet_radar/model/DailyPrediction.dart';
+import 'package:aemet_radar/model/FullPrediction.dart';
+import 'package:aemet_radar/model/HourlyPrediction.dart';
 import 'package:aemet_radar/model/Province.dart';
-import 'package:aemet_radar/model/SearchResult.dart';
 import 'package:aemet_radar/model/RadarImage.dart';
 import 'package:aemet_radar/network/RetroClient.dart';
-import 'package:html/parser.dart' as htmlParser;
+import 'package:aemet_radar/service/OpenDataDynamicRepository.dart';
+import 'package:aemet_radar/service/parser/DailyPredictionParser.dart';
+import 'package:aemet_radar/service/parser/HourlyPredictionParser.dart';
+import 'package:aemet_radar/service/responses/OpenDataBaseResponse.dart';
 import 'package:aemet_radar/values/Strings.dart';
 import 'package:aemet_radar/utils/XORCipher.dart';
-import 'package:aemet_radar/service/parser/RadarTimeLinesParser.dart' as RadarTimeLineParser;
+import 'package:aemet_radar/service/parser/RadarTimeLinesParser.dart'
+    as RadarTimeLineParser;
 
 class AemetRepository {
-  final client = RetroClient();
-  final environment = "aemet.es";
+  final _client = RetroClient();
+
+  final _openDataDynamicRepository = OpenDataDynamicRepository();
+
+  final _aemetBaseUrl = "aemet.es";
+  final _aemetOpenDataBaseUrl = "opendata.aemet.es";
 
   Stream<List<RadarImage>> getRadarImagesFromNetwork(Province province) {
-    String url = "/es/apps/radar";
+    String endpoint = "/es/apps/radar";
     String param = "$radarPrefix${province.code}$radarSeparator$token";
 
-//    String fullUrl =
+    final uri = Uri.parse(
+        "https://www.$_aemetBaseUrl$endpoint?$radarParamName=${encode(param)}");
+    final headers = {radarHeaderUserAgent: decode(userAgent)};
 
-//    final uri = Uri.http(environment, url, { radarParamName : encode(param) });
-    final uri = Uri.parse("https://www.$environment$url?$radarParamName=${encode(param)}");
-    final headers = { radarHeaderUserAgent : decode(userAgent) };
-
-    return client.get(uri, headers: headers)
-        .asStream()
-        .map((response) {
+    return _client.get(uri, headers: headers).asStream().map((response) {
       final Map<String, dynamic> jsonBody = jsonDecode(response.body);
 
       final radarImages = RadarTimeLineParser.parse(jsonBody);
@@ -37,84 +43,146 @@ class AemetRepository {
     });
   }
 
-  Stream<SearchResult> searchLocation(String query) {
-    final url =
-        "/es/eltiempo/prediccion/municipios?modo=and&orden=n&tipo=sta&str=$query";
-    final uri = Uri.http(environment, url);
-    return client.get(uri).asStream().map((response) {
-      final document = htmlParser.parse(response.body);
-      final tabLinks = document
-          .querySelector("ul[class=\"nav_pestanha\"]")
-          ?.querySelectorAll("a");
+  Stream<HourlyPrediction> getHourlyPredictionForLocation(String locationCode) {
+    return _getHourlyPredictionForLocationFuture(locationCode).asStream();
+  }
 
-      bool didFound = false;
-      List<LocationOption> options = [];
-      String locationCode;
+  Future<HourlyPrediction> _getHourlyPredictionForLocationFuture(
+      String locationCode) {
+    final endpoint =
+        "/opendata/api/prediccion/especifica/municipio/horaria/$locationCode";
 
-      if (tabLinks != null && tabLinks.length > 0) {
-        didFound = true;
+    final uri = Uri.https(_aemetOpenDataBaseUrl, endpoint);
 
-        final firstLink = tabLinks[0].attributes["href"];
-        final code = firstLink.substring(firstLink.lastIndexOf("/") + 1);
+    final headers = {apiKeyHeaderKey: openDataToken};
 
-        locationCode = code;
+    return _client.get(uri, headers: headers).then((response) {
+      final Map<String, dynamic> jsonBody = jsonDecode(response.body);
+      final openDataResponse = OpenDataBaseResponse.fromJson(jsonBody);
+
+      if (openDataResponse.datos != null) {
+        return _openDataDynamicRepository
+            .retrieveParsedDataFromDynamicOpenData<HourlyPrediction>(
+          openDataResponse.datos,
+          HourlyPredictionParser(),
+        );
       } else {
-        final results =
-            document.querySelectorAll("div[class=\"resultados_busqueda\"] li");
+        throw Exception("Error retrieving data");
+      }
+    });
+  }
 
-        if (results != null && results.length > 0) {
-          results.forEach((result) {
-            final link = result.querySelector("a");
-            final href = link.attributes["href"];
-            final info = result.querySelector("p").text;
+  Stream<DailyPrediction> getDailyPredictionForLocation(String locationCode) {
+    return _getDailyPredictionForLocationFuture(locationCode).asStream();
+  }
 
-            final code = href.substring(href.lastIndexOf("/") + 1);
-            final name = link.text;
-            final province = info
-                .substring(info.indexOf(":") + 1,
-                    info.indexOf("\n", info.indexOf(":")))
-                .trim();
+  Future<DailyPrediction> _getDailyPredictionForLocationFuture(
+      String locationCode) {
+    final endpoint =
+        "/opendata/api/prediccion/especifica/municipio/diaria/$locationCode";
 
-            options.add(LocationOption(code, name, province));
-          });
+    final uri = Uri.https(_aemetOpenDataBaseUrl, endpoint);
+
+    final headers = {apiKeyHeaderKey: openDataToken};
+
+    return _client.get(uri, headers: headers).then((response) {
+      final Map<String, dynamic> jsonBody = jsonDecode(response.body);
+      final openDataResponse = OpenDataBaseResponse.fromJson(jsonBody);
+
+      if (openDataResponse.datos != null) {
+        return _openDataDynamicRepository
+            .retrieveParsedDataFromDynamicOpenData<DailyPrediction>(
+          openDataResponse.datos,
+          DailyPredictionParser(),
+        );
+      } else {
+        throw Exception("Error retrieving data");
+      }
+    });
+  }
+
+  Stream<FullPrediction> getFullPredictionForLocation(String locationCode) {
+    return Future.wait([
+      _getHourlyPredictionForLocationFuture(locationCode),
+      _getDailyPredictionForLocationFuture(locationCode)
+    ]).asStream().asyncMap((responses) {
+      final HourlyPrediction hourlyPrediction =
+          responses.firstWhere((item) => item is HourlyPrediction);
+      final DailyPrediction dailyPrediction =
+          responses.firstWhere((item) => item is DailyPrediction);
+
+      final maxLength =
+          max(hourlyPrediction.days.length, dailyPrediction.days.length);
+
+      final town = hourlyPrediction.town;
+      final province = hourlyPrediction.province;
+      final List<FullPredictionDay> days = List();
+
+      for (int i = 0; i < maxLength; i++) {
+        if (i < hourlyPrediction.days.length) {
+          final hourlyPredictionDay = hourlyPrediction.days[i];
+          final dailyPredictionDay = dailyPrediction.days.firstWhere(
+              (item) => item.date.isAtSameMomentAs(hourlyPredictionDay.date));
+
+          final fullPredictionDay = _getFullPredictionOfHourlyAndDaily(
+              dailyPredictionDay,
+              hourlyPredictionDay: hourlyPredictionDay);
+
+          days.add(fullPredictionDay);
+        } else {
+          final dailyPredictionDay = dailyPrediction.days[i];
+
+          days.add(_getFullPredictionOfHourlyAndDaily(dailyPredictionDay));
         }
       }
 
-      return SearchResult(didFound, options, locationCode);
+      return FullPrediction(town, province, days);
     });
   }
 
-  Stream<String> getWeekXmlLink(String locationCode) {
-    final url = "/es/eltiempo/prediccion/municipios/$locationCode";
+  FullPredictionDay _getFullPredictionOfHourlyAndDaily(
+    DailyPredictionDay dailyPredictionDay, {
+    HourlyPredictionDay hourlyPredictionDay,
+  }) {
+    DateTime date = dailyPredictionDay.date;
+    String uvMax = dailyPredictionDay.uvMax;
+    List<RainProbability> rainProbability = dailyPredictionDay.rainProbability;
+    List<SnowLevelProbability> snowLevelProbability =
+        dailyPredictionDay.snowLevelProbability;
+    List<SkyStatus> skyStatus = dailyPredictionDay.skyStatus;
+    List<DailyWind> wind = dailyPredictionDay.wind;
+    List<MaxWindGust> maxWindGust = dailyPredictionDay.maxWindGust;
+    Temperature temperature = dailyPredictionDay.temperature;
+    ThermalSensation thermalSensation = dailyPredictionDay.thermalSensation;
+    RelativeHumidity relativeHumidity = dailyPredictionDay.relativeHumidity;
 
-    final uri = Uri.http(environment, url);
+    List<PredictionHour> hours;
+    List<PredictionHourRange> hourRanges;
+    DateTime orto;
+    DateTime ocaso;
 
-    return client.get(uri).asStream().map((response) {
-      final document = htmlParser.parse(response.body);
-      final xmlLink = document.querySelector("div[class*=\"enlace_xml\"] a");
+    if (hourlyPredictionDay != null) {
+      hours = hourlyPredictionDay.hours;
+      hourRanges = hourlyPredictionDay.hourRanges;
+      orto = hourlyPredictionDay.orto;
+      ocaso = hourlyPredictionDay.ocaso;
+    }
 
-      if (xmlLink != null) {
-        return xmlLink.attributes["href"];
-      } else {
-        return "";
-      }
-    });
-  }
-
-  Stream<String> getHourlyXmlLink(String locationCode) {
-    final url = "/es/eltiempo/prediccion/municipios/horas/$locationCode";
-
-    final uri = Uri.http(environment, url);
-
-    return client.get(uri).asStream().map((response) {
-      final document = htmlParser.parse(response.body);
-      final xmlLink = document.querySelector("div[class*=\"enlace_xml\"] a");
-
-      if (xmlLink != null) {
-        return xmlLink.attributes["href"];
-      } else {
-        return "";
-      }
-    });
+    return FullPredictionDay(
+      date,
+      uvMax,
+      rainProbability,
+      snowLevelProbability,
+      skyStatus,
+      wind,
+      maxWindGust,
+      temperature,
+      thermalSensation,
+      relativeHumidity,
+      hours: hours,
+      hourRanges: hourRanges,
+      orto: orto,
+      ocaso: ocaso,
+    );
   }
 }

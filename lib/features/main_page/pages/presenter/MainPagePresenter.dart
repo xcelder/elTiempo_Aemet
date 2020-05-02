@@ -1,20 +1,45 @@
-
 import 'dart:async';
 
+import 'package:aemet_radar/features/main_page/pages/MainPageView.dart';
+import 'package:aemet_radar/features/main_page/pages/preferences/RadarPreferences.dart';
 import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/service/AemetRepository.dart';
 
 class MainPagePresenter {
   final AemetRepository repository;
+  final MainPageView view;
 
-  MainPagePresenter(this.repository);
+  final MainPageViewState viewState;
 
-  final StreamController<CurrentWeatherState> _stateController = StreamController();
+  MainPagePresenter(this.repository, this.view, this.viewState);
 
-  Stream<CurrentWeatherState> get currentWeatherStateStream => _stateController.stream;
+  void loadWeatherData(String locationCode) {
+    viewState.updateCurrentWeatherState(Busy());
 
-  void dispose() {
-    _stateController.close();
+    repository.getFullPredictionForLocation(locationCode).listen(
+      (data) {
+        viewState.updateCurrentWeatherState(Result(data));
+      },
+      onError: (error) {
+        viewState.updateCurrentWeatherState(Error());
+      },
+    );
   }
 
+  void loadPreferredProvince() async {
+    final radarPreferences = await RadarPreferences.instance();
+    final preferredRadar = radarPreferences.retrievePreferredProvinceRadar();
+    view.onPreferredProvinceLoaded(preferredRadar);
+  }
+
+  void savePreferredProvince(Province selectedProvince) async {
+    final radarPreferences = await RadarPreferences.instance();
+    radarPreferences.saveProvinceRadar(selectedProvince);
+  }
+
+  void dispose() {
+    viewState.dispose();
+  }
 }

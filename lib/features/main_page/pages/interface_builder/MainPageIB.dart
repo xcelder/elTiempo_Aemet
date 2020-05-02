@@ -1,18 +1,21 @@
 import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/model/FullPrediction.dart';
 import 'package:aemet_radar/model/Province.dart';
-import 'package:aemet_radar/values/Provinces.dart';
 import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:aemet_radar/values/AppColors.dart';
+import 'package:aemet_radar/values/Strings.dart';
 import 'package:aemet_radar/widgets/Backdrop.dart';
+import 'package:aemet_radar/widgets/CloudLoading.dart';
 import 'package:flutter/material.dart';
+import 'package:aemet_radar/values/WeatherIconCodes.dart' as WeatherIcons;
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../RadarPage.dart';
 
 Widget build(
   BuildContext context,
-  GlobalKey<RadarPageState> radarKey,
   BackdropController bdController,
-  Stream<CurrentWeatherState> cwStream,
   Province currentProvince,
   Function(Province province) onSelectProvince,
 ) =>
@@ -27,173 +30,259 @@ Widget build(
         ),
         child: Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                flex: 25,
-                child: _buildCurrentWeather(cwStream),
+          child: StreamBuilder<CurrentWeatherState>(
+            initialData: NoData(),
+            stream: MainPageViewState.of(context).weatherState.stream,
+            builder: (context, snapshot) => AnimatedSwitcher(
+              duration: Duration(seconds: 1),
+              transitionBuilder: (child, animation) {
+                return SizeTransition(
+                  child: child,
+                  sizeFactor: animation,
+                );
+              },
+              child: _buildWeatherForState(
+                bdController,
+                currentProvince,
+                onSelectProvince,
+                snapshot.data,
               ),
-              Expanded(
-                  flex: 75,
-                  child: _buildBackdrop(
-                    radarKey,
-                    bdController,
-                    currentProvince,
-                    onSelectProvince,
-                  )),
-            ],
+            ),
           ),
         ),
       ),
     );
 
+Widget _buildWeatherForState(
+  BackdropController bdController,
+  Province currentProvince,
+  Function(Province province) onSelectProvince,
+  CurrentWeatherState state,
+) {
+  switch (state.runtimeType) {
+    case Busy:
+      return _buildLoading();
+    case Result:
+      return _buildDataContent(
+        bdController,
+        currentProvince,
+        onSelectProvince,
+        (state as Result).result,
+      );
+    default:
+      return Container();
+  }
+}
+
+Widget _buildDataContent(
+  BackdropController bdController,
+  Province currentProvince,
+  Function(Province province) onSelectProvince,
+  FullPrediction prediction,
+) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+      Expanded(
+        flex: 25,
+        child: _buildCurrentWeather(prediction),
+      ),
+      Expanded(
+          flex: 75,
+          child: _buildBackdrop(
+            bdController,
+            currentProvince,
+            onSelectProvince,
+          )),
+    ],
+  );
+}
+
+Widget _buildLoading() => Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CloudLoading(),
+          SizedBox(
+            height: 8,
+          ),
+          Text(
+            loadingLabel,
+            style: TextStyle(fontSize: 24, color: Colors.white),
+          )
+        ],
+      ),
+    );
+
 //region CURRENT WEATHER
-Widget _buildCurrentWeather(Stream<CurrentWeatherState> cwStream) =>
-    StreamBuilder<CurrentWeatherState>(
-      initialData: NoData(),
-      stream: cwStream,
-      builder: (context, snapshot) {
-        String name = "Valladolid";
-        String town = "Valladolid";
-        String rainProbability = "20";
-        String sensation = "1";
-        String maxTemp = "7";
-        String minTemp = "0";
-        String temp = "22";
+Widget _buildCurrentWeather(FullPrediction hourlyPrediction) {
+  String town = hourlyPrediction.town;
+  String province = hourlyPrediction.province;
 
-        final whiteText = TextStyle(color: Colors.white);
+  final now = DateTime.now();
 
-        return Container(
-          child: Padding(
-            padding: const EdgeInsets.all(18.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+  final todayPrediction = hourlyPrediction.days.firstWhere((predictionDay) {
+    return predictionDay.date.day == now.day;
+  });
+
+  final currentHourPrediction =
+      todayPrediction.hours.firstWhere((predictionHour) {
+    return predictionHour.hour.hour == now.hour;
+  });
+
+  todayPrediction.hours.sort((a, b) {
+    return a.temperature.compareTo(b.temperature);
+  });
+
+  final currentPeriod = todayPrediction.hourRanges.firstWhere(
+      (item) => now.hour >= item.startTime.hour && now.isBefore(item.endTime));
+
+  String rainProbability = (currentPeriod.rainProbability.isNotEmpty)
+      ? currentPeriod.rainProbability
+      : "0";
+  String sensation = currentHourPrediction.thermalSensation;
+  String maxTemp = todayPrediction.temperature.max;
+  String minTemp = todayPrediction.temperature.min;
+  String temp = currentHourPrediction.temperature;
+  String imagePath = WeatherIcons.weatherIcons[currentHourPrediction.skyStatus];
+
+  final imageSize = 110.0;
+
+  final whiteText = TextStyle(color: Colors.white);
+
+  return Container(
+    child: Padding(
+      padding: const EdgeInsets.all(18.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            flex: 6,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    town,
+                    style: whiteText.copyWith(fontSize: 32),
+                  ),
+                  Text(
+                    "($province)",
+                    style: whiteText.copyWith(fontSize: 18),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  Text(
+                    "prob. precipitación: $rainProbability%",
+                    style: whiteText.copyWith(fontSize: 18),
+                  ),
+                  Text(
+                    "sensación térmica: $sensation",
+                    style: whiteText.copyWith(fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Column(
               children: <Widget>[
                 Expanded(
-                  flex: 6,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(
-                          height: 12,
-                        ),
-                        Text(
-                          name,
-                          style: whiteText.copyWith(fontSize: 32),
-                        ),
-                        Text(
-                          "($town)",
-                          style: whiteText.copyWith(fontSize: 18),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Text(
-                          "prob. precipitación: $rainProbability%",
-                          style: whiteText.copyWith(fontSize: 18),
-                        ),
-                        Text(
-                          "sensación térmica: $sensation",
-                          style: whiteText.copyWith(fontSize: 18),
-                        ),
-                      ],
+                  child: Center(
+                    child: Transform.translate(
+                      offset: Offset(0, 15),
+                      child: SvgPicture.asset(
+                        imagePath,
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.cover,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
                 Expanded(
-                  flex: 4,
-                  child: Column(
+                  child: Row(
                     children: <Widget>[
-                      Expanded(
-                        child: Center(
-                          child: Icon(
-                            Icons.cloud,
-                            size: 70,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Row(
-                          children: <Widget>[
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Center(
+                            child: Row(
                               children: <Widget>[
-                                Center(
-                                  child: Row(
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.arrow_upward,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        "$maxTempºC",
-                                        style: whiteText,
-                                      )
-                                    ],
-                                  ),
+                                Icon(
+                                  Icons.arrow_upward,
+                                  size: 18,
+                                  color: Colors.white,
                                 ),
-                                Center(
-                                  child: Row(
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.arrow_downward,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                      Text(
-                                        "$minTempºC",
-                                        style: whiteText,
-                                      )
-                                    ],
-                                  ),
-                                ),
+                                Text(
+                                  "$maxTempºC",
+                                  style: whiteText,
+                                )
                               ],
                             ),
-                            SizedBox(
-                              width: 12,
+                          ),
+                          Center(
+                            child: Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.arrow_downward,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                Text(
+                                  "$minTempºC",
+                                  style: whiteText,
+                                )
+                              ],
                             ),
-                            Center(
-                              child: Text(
-                                "$tempºC",
-                                style: whiteText.copyWith(fontSize: 38),
-                              ),
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        width: 12,
+                      ),
+                      Center(
+                        child: Text(
+                          "$tempºC",
+                          style: whiteText.copyWith(fontSize: 38),
                         ),
-                      )
+                      ),
                     ],
                   ),
-                ),
+                )
               ],
             ),
           ),
-        );
-      },
-    );
+        ],
+      ),
+    ),
+  );
+}
 //endregion
 
 //region BACKDROP
 Widget _buildBackdrop(
-  GlobalKey<RadarPageState> radarKey,
   BackdropController bdController,
   Province currentProvince,
   Function(Province province) onSelectProvince,
 ) {
   return Backdrop(
     controller: bdController,
-    frontLayer: _buildFrontLayer(radarKey, bdController, currentProvince),
+    frontLayer: _buildFrontLayer(bdController, currentProvince),
     backLayer: _buildBackLayer(currentProvince, onSelectProvince),
     frontAction: Icon(Icons.menu),
   );
 }
 
 Widget _buildFrontLayer(
-  GlobalKey<RadarPageState> radarKey,
   BackdropController bdController,
   Province currentProvince,
 ) =>
@@ -254,7 +343,6 @@ Widget _buildFrontLayer(
           Expanded(
             child: RadarPage(
               currentProvince,
-              key: radarKey,
             ),
           ),
         ],

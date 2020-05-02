@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:aemet_radar/features/main_page/pages/MainPage.dart';
+import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
 import 'package:aemet_radar/features/search_page/pages/SearchPage.dart';
 import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
-import 'package:aemet_radar/model/LocationWeather.dart';
+import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
+import 'package:aemet_radar/model/LocationOption.dart';
 import 'package:aemet_radar/values/AppColors.dart';
+import 'package:aemet_radar/values/Strings.dart';
 import 'package:flutter/material.dart';
+
+import '../SearchState.dart';
 
 class MainSearchPage extends StatefulWidget {
   @override
@@ -13,6 +21,8 @@ class MainSearchPage extends StatefulWidget {
 class _MainSearchPageState extends State<MainSearchPage> {
   SearchRouter router;
 
+  final stateController = StreamController<SearchState>();
+
   @override
   void initState() {
     router = SearchRouter(onNavigateToMainPage);
@@ -20,10 +30,19 @@ class _MainSearchPageState extends State<MainSearchPage> {
     super.initState();
   }
 
-  void onNavigateToMainPage(LocationWeather locationWeather) {
+  void onNavigateToMainPage(LocationOption locationOption) {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => MainPage(locationWeather),
+      builder: (context) => MainPageViewState(
+        StreamController<CurrentWeatherState>(),
+        child: MainPage(locationOption),
+      ),
     ));
+  }
+
+  @override
+  void dispose() {
+    stateController.close();
+    super.dispose();
   }
 
   @override
@@ -55,11 +74,11 @@ class _MainSearchPageState extends State<MainSearchPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        "elTiempo",
+                        title1,
                         style: titleTextStyle,
                       ),
                       Text(
-                        "AEMET",
+                        title2,
                         style: titleTextStyle.copyWith(fontSize: 24),
                       ),
                     ],
@@ -67,7 +86,10 @@ class _MainSearchPageState extends State<MainSearchPage> {
                 )),
             Expanded(
               flex: 6,
-              child: SearchPage(router),
+              child: SearchViewState(
+                stateController,
+                child: SearchPage(router),
+              ),
             )
           ],
         ),

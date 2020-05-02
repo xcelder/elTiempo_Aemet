@@ -1,7 +1,7 @@
 class LocationWeather {
   final String locationCode;
-  final String weekXmlLink;
-  final String hourlyXmlLink;
+  final String provinceName;
+  final String townName;
 
-  LocationWeather(this.locationCode, this.weekXmlLink, this.hourlyXmlLink);
+  LocationWeather(this.locationCode, this.provinceName, this.townName);
 }

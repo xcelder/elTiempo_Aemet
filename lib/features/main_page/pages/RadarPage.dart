@@ -41,6 +41,15 @@ class RadarPageState extends State<RadarPage> implements RadarView {
   }
 
   @override
+  void didUpdateWidget(RadarPage oldWidget) {
+    setState(() {
+      state = PageState.BUSY;
+    });
+    presenter.loadRadarImagesOf(widget.province);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void onRadarImagesLoaded(List<RadarImage> radarImages) {
     setState(() {
       _precacheImages(radarImages);
