@@ -18,5 +18,8 @@ const String apiKeyHeaderKey = "api_key";
 const String townLabel = "Municipio";
 const String loadingLabel = "Cargando datos";
 
+// Main page
+const String errorLabel = "No se han obtenido datos";
+
 // RADAR Page
 const String radarErrorMessage = "Algo no fué bien, por favor recargue la página";

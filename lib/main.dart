@@ -1,12 +1,7 @@
-import 'package:aemet_radar/features/main_page/pages/MainPage.dart';
-import 'package:aemet_radar/features/search_page/pages/SearchPage.dart';
-import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
 import 'package:aemet_radar/features/splash_page/SplashPage.dart';
-import 'package:aemet_radar/model/LocationWeather.dart';
 import 'package:aemet_radar/values/AppColors.dart';
 import 'package:flutter/material.dart';
 
-import 'features/search_page/navigation/MainSearchPage.dart';
 
 void main() => runApp(MyApp());
 

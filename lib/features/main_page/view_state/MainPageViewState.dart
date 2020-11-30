@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/state/CurrentWeatherState.dart';
 import 'package:flutter/material.dart';
 
 class MainPageViewState extends InheritedWidget {

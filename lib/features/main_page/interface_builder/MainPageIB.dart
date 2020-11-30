@@ -1,6 +1,8 @@
-import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
-import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/features/main_page/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/features/radar/RadarPage.dart';
 import 'package:aemet_radar/model/FullPrediction.dart';
+import 'package:aemet_radar/model/HourlyPrediction.dart';
 import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/values/ProvincesWithCodes.dart';
 import 'package:aemet_radar/values/AppColors.dart';
@@ -12,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:aemet_radar/values/WeatherIconCodes.dart' as WeatherIcons;
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../RadarPage.dart';
 
 Widget build(
   BuildContext context,
@@ -70,6 +71,8 @@ Widget _buildWeatherForState(
         onSelectProvince,
         (state as Result).result,
       );
+    case Error:
+      return _buildError();
     default:
       return Container();
   }
@@ -117,27 +120,17 @@ Widget _buildLoading() => Center(
     );
 
 //region CURRENT WEATHER
-Widget _buildCurrentWeather(FullPrediction hourlyPrediction) {
-  String town = hourlyPrediction.town;
-  String province = hourlyPrediction.province;
+Widget _buildCurrentWeather(FullPrediction fullPrediction) {
+  String town = fullPrediction.town;
+  String province = fullPrediction.province;
 
   final now = DateTime.now();
 
-  final todayPrediction = hourlyPrediction.days.firstWhere((predictionDay) {
-    return predictionDay.date.day == now.day;
-  });
+  final todayPrediction = fullPrediction.getPredictionForDay(now);
 
-  final currentHourPrediction =
-      todayPrediction.hours.firstWhere((predictionHour) {
-    return predictionHour.hour.hour == now.hour;
-  });
+  final currentHourPrediction = todayPrediction.getPredictionForHour(now);
 
-  todayPrediction.hours.sort((a, b) {
-    return a.temperature.compareTo(b.temperature);
-  });
-
-  final currentPeriod = todayPrediction.hourRanges.firstWhere(
-      (item) => now.hour >= item.startTime.hour && now.isBefore(item.endTime));
+  PredictionHourRange currentPeriod = fullPrediction.getPredictionRangeForHour(now);
 
   String rainProbability = (currentPeriod.rainProbability.isNotEmpty)
       ? currentPeriod.rainProbability
@@ -199,7 +192,7 @@ Widget _buildCurrentWeather(FullPrediction hourlyPrediction) {
                 Expanded(
                   child: Center(
                     child: Transform.translate(
-                      offset: Offset(0, 15),
+                      offset: Offset(0, 10),
                       child: SvgPicture.asset(
                         imagePath,
                         width: imageSize,
@@ -381,3 +374,13 @@ Widget _buildBackLayer(Province currentProvince,
       }).toList(),
     );
 //endregion
+
+Widget _buildError() {
+  return Center(
+    child: Column(
+      children: [
+        Text(errorLabel)
+      ],
+    ),
+  );
+}

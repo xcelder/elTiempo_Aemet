@@ -1,7 +1,6 @@
-import 'package:aemet_radar/features/splash_page/SplashRouter/SplashRouter.dart';
+import 'package:aemet_radar/features/splash_page/router/SplashRouter.dart';
 import 'package:aemet_radar/features/splash_page/SplashView.dart';
 import 'package:aemet_radar/features/splash_page/presenter/SplashPresenter.dart';
-import 'package:aemet_radar/model/Province.dart';
 import 'package:flutter/material.dart';
 import 'package:aemet_radar/features/splash_page/interface_builder/SplashIB.dart' as InterfaceBuilder;
 import 'package:aemet_radar/features/splash_page/injector/SplashInjector.dart' as Injector;

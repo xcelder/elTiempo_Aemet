@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:aemet_radar/features/main_page/pages/MainPage.dart';
-import 'package:aemet_radar/features/main_page/pages/state/CurrentWeatherState.dart';
-import 'package:aemet_radar/features/main_page/pages/view_state/MainPageViewState.dart';
+import 'package:aemet_radar/features/main_page/MainPage.dart';
+import 'package:aemet_radar/features/main_page/state/CurrentWeatherState.dart';
+import 'package:aemet_radar/features/main_page/view_state/MainPageViewState.dart';
 import 'package:aemet_radar/features/search_page/pages/SearchPage.dart';
 import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
 import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
@@ -13,12 +13,12 @@ import 'package:flutter/material.dart';
 
 import '../SearchState.dart';
 
-class MainSearchPage extends StatefulWidget {
+class SearchPageContainer extends StatefulWidget {
   @override
-  _MainSearchPageState createState() => _MainSearchPageState();
+  _SearchPageContainerState createState() => _SearchPageContainerState();
 }
 
-class _MainSearchPageState extends State<MainSearchPage> {
+class _SearchPageContainerState extends State<SearchPageContainer> {
   SearchRouter router;
 
   final stateController = StreamController<SearchState>();
@@ -31,12 +31,14 @@ class _MainSearchPageState extends State<MainSearchPage> {
   }
 
   void onNavigateToMainPage(LocationOption locationOption) {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => MainPageViewState(
-        StreamController<CurrentWeatherState>(),
-        child: MainPage(locationOption.locationCode),
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => MainPageViewState(
+          StreamController<CurrentWeatherState>(),
+          child: MainPage(locationOption.locationCode),
+        ),
       ),
-    ));
+    );
   }
 
   @override
@@ -66,13 +68,13 @@ class _MainSearchPageState extends State<MainSearchPage> {
           ),
         ),
         child: Column(
-          children: <Widget>[
+          children: [
             Expanded(
                 flex: 4,
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
+                    children: [
                       Text(
                         title1,
                         style: titleTextStyle,

@@ -105,7 +105,11 @@ class HourlyPredictionParser
           day.probNieve.firstWhere((item) => item.periodo == range);
 
       final startTime = dayTime.setHour(int.parse(range.substring(0, 2)));
-      final endTime = dayTime.setHour(int.parse(range.substring(2)));
+      DateTime endTime = dayTime.setHour(int.parse(range.substring(2)));
+
+      if (startTime.hour > 12 && endTime.hour < 12) {
+        endTime = endTime.setDay(endTime.day + 1);
+      }
 
       final predictionHourRange = PredictionHourRange(
         startTime,

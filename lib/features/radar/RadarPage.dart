@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:aemet_radar/features/main_page/pages/presenter/RadarPresenter.dart';
-import 'package:aemet_radar/features/main_page/pages/utils/CacheNetworkImageAspectRatio.dart';
+import 'package:aemet_radar/features/radar/presenter/RadarPresenter.dart';
+import 'package:aemet_radar/features/main_page/utils/CacheNetworkImageAspectRatio.dart';
 import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/model/RadarImage.dart';
 import 'package:flutter/material.dart';
-import 'package:aemet_radar/features/main_page/pages/interface_builder/RadarPageIB.dart'
+import 'package:aemet_radar/features/radar/interface_builder/RadarPageIB.dart'
     as interfaceBuilder;
-import 'package:aemet_radar/features/main_page/pages/injector/RadarInjector'
-    '.dart' as injector;
-import 'package:aemet_radar/features/main_page/pages/RadarView.dart';
+import 'package:aemet_radar/features/radar/injector/RadarInjector.dart' as injector;
+import 'package:aemet_radar/features/radar/RadarView.dart';
 import 'package:aemet_radar/features/utils/PageState.dart';
 
 const int MAX_WIDTH_IMAGE = 900;
