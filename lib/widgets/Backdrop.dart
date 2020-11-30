@@ -274,7 +274,7 @@ class _BackdropState extends State<Backdrop>
   bool isOpen() {
     final AnimationStatus status = _controller.status;
     return status == AnimationStatus.completed ||
-                        status == AnimationStatus.forward;
+        status == AnimationStatus.forward;
   }
 
   Widget _buildStack(BuildContext context, BoxConstraints constraints) {
@@ -284,26 +284,29 @@ class _BackdropState extends State<Backdrop>
           0.0, constraints.biggest.height - _kFrontClosedHeight, 0.0, 0.0),
       end: const RelativeRect.fromLTRB(0.0, 0.0, 0.0, 0.0),
     ));
+    final Animation<RelativeRect> backRelativeRect =
+        _controller.drive(RelativeRectTween(
+      begin: const RelativeRect.fromLTRB(0.0, 0.0, 0.0, 0.0),
+      end: RelativeRect.fromLTRB(
+          0.0, constraints.biggest.height - _kFrontClosedHeight, 0.0, 0.0),
+    ));
     return Stack(
       key: _backdropKey,
       children: <Widget>[
         // Back layer
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Expanded(
-              child: _TappableWhileStatusIs(
-                AnimationStatus.dismissed,
-                controller: _controller,
-                child: Visibility(
-                  child: widget.backLayer,
-                  visible: _controller.status != AnimationStatus.completed,
-                  maintainState: true,
-                ),
-              ),
+        PositionedTransition(
+          rect: backRelativeRect,
+          child: _TappableWhileStatusIs(
+            AnimationStatus.dismissed,
+            controller: _controller,
+            child: Visibility(
+              child: widget.backLayer,
+              visible: true,
+              maintainState: true,
             ),
-          ],
-        ), // Front layer
+          ),
+        ),
+        // Front layer
         PositionedTransition(
           rect: frontRelativeRect,
           child: AnimatedBuilder(
@@ -327,7 +330,8 @@ class _BackdropState extends State<Backdrop>
               child: widget.frontLayer,
             ),
           ),
-        ), // The front "heading" is a (typically transparent) widget that's stacked on
+        ),
+        // The front "heading" is a (typically transparent) widget that's stacked on
         // top of, and at the top of, the front layer. It adds support for dragging
         // the front layer up and down and for opening and closing the front layer
         // with a tap. It may obscure part of the front layer's topmost child.

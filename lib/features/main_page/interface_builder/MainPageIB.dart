@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:aemet_radar/values/WeatherIconCodes.dart' as WeatherIcons;
 import 'package:flutter_svg/flutter_svg.dart';
 
-
 Widget build(
   BuildContext context,
   BackdropController bdController,
@@ -130,7 +129,8 @@ Widget _buildCurrentWeather(FullPrediction fullPrediction) {
 
   final currentHourPrediction = todayPrediction.getPredictionForHour(now);
 
-  PredictionHourRange currentPeriod = fullPrediction.getPredictionRangeForHour(now);
+  PredictionHourRange currentPeriod =
+      fullPrediction.getPredictionRangeForHour(now);
 
   String rainProbability = (currentPeriod.rainProbability.isNotEmpty)
       ? currentPeriod.rainProbability
@@ -341,8 +341,10 @@ Widget _buildFrontLayer(
       ),
     );
 
-Widget _buildBackLayer(Province currentProvince,
-        Function(Province province) onSelectProvince) =>
+Widget _buildBackLayer(
+  Province currentProvince,
+  Function(Province province) onSelectProvince,
+) =>
     ListView(
       padding: const EdgeInsets.only(bottom: 120),
       children: provinces.map((province) {
@@ -378,9 +380,7 @@ Widget _buildBackLayer(Province currentProvince,
 Widget _buildError() {
   return Center(
     child: Column(
-      children: [
-        Text(errorLabel)
-      ],
+      children: [Text(errorLabel)],
     ),
   );
 }

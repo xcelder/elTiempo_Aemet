@@ -44,9 +44,9 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver impleme
 
   @override
   void onPreferredProvinceLoaded(Province selectedProvince) {
-    setState(() {
-      currentProvince = selectedProvince;
-    });
+//    setState(() {
+//      currentProvince = selectedProvince;
+//    });
   }
 
   @override
