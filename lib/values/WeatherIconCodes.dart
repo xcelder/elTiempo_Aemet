@@ -29,8 +29,6 @@ final weatherIcons = {
   "27n" : _getImagePath("Cloud-Rain-Moon"),
   "33" : _getImagePath("Cloud-Snown-Sun-Alt"),
   "33n" : _getImagePath("Cloud-Snow-Moon-Alt"),
-  "33" : _getImagePath("Cloud-Snown-Sun-Alt"),
-  "33n" : _getImagePath("Cloud-Snow-Moon-Alt"),
   "34" : _getImagePath("Cloud-Snown-Sun"),
   "34n" : _getImagePath("Cloud-Snow-Moon"),
   "35" : _getImagePath("Cloud-Snown-Alt"),

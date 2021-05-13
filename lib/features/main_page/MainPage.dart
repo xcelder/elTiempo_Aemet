@@ -9,6 +9,7 @@ import 'package:aemet_radar/features/main_page/interface_builder/MainPageIB.dart
     as layout;
 import 'package:aemet_radar/features/main_page/injector/MainPageInjector.dart'
     as injector;
+import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
   final String locationCode;
@@ -19,7 +20,7 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with WidgetsBindingObserver implements MainPageView {
+class _MainPageState extends State<MainPage> implements MainPageView {
   MainPagePresenter presenter;
 
   BackdropController bdController = BackdropController();
@@ -29,24 +30,20 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver impleme
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
 
-  @override
-  void didChangeDependencies() {
-    presenter =
-        injector.injectMainPagePresenter(this, MainPageViewState.of(context));
-    presenter.loadPreferredProvince();
-    presenter.loadWeatherData(widget.locationCode);
-
-    super.didChangeDependencies();
+    Future.delayed(Duration.zero, () {
+      presenter = injector.injectMainPagePresenter(
+          this, Provider.of<MainPageViewState>(context, listen: false));
+      presenter.loadPreferredProvince();
+      presenter.loadWeatherData(widget.locationCode);
+    });
   }
 
   @override
   void onPreferredProvinceLoaded(Province selectedProvince) {
-//    setState(() {
-//      currentProvince = selectedProvince;
-//    });
+    setState(() {
+      currentProvince = selectedProvince;
+    });
   }
 
   @override
@@ -62,13 +59,6 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver impleme
       currentProvince = selectedProvince;
       bdController.toggleFrontLayer();
     });
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    presenter.dispose();
-    super.dispose();
   }
 
   @override

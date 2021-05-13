@@ -13,7 +13,7 @@ Future<List<LocationOption>> provideLocations() async {
 
   final table = spreadSheet.tables[spreadSheet.tables.keys.first];
 
-  final townList = List<LocationOption>();
+  final townList = [];
 
   for (int i = 2; i < table.rows.length; i++) {
     final row = table.rows[i];

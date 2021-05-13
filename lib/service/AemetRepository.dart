@@ -116,7 +116,7 @@ class AemetRepository {
 
       final town = hourlyPrediction.town;
       final province = hourlyPrediction.province;
-      final List<FullPredictionDay> days = List();
+      final List<FullPredictionDay> days = [];
 
       for (int i = 0; i < maxLength; i++) {
         if (i < hourlyPrediction.days.length) {

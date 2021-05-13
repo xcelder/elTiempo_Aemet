@@ -13,6 +13,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:aemet_radar/values/WeatherIconCodes.dart' as WeatherIcons;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 Widget build(
   BuildContext context,
@@ -31,10 +32,8 @@ Widget build(
         ),
         child: Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: StreamBuilder<CurrentWeatherState>(
-            initialData: NoData(),
-            stream: MainPageViewState.of(context).weatherState.stream,
-            builder: (context, snapshot) => AnimatedSwitcher(
+          child: Consumer<MainPageViewState>(
+            builder: (context, value, child) => AnimatedSwitcher(
               duration: Duration(seconds: 1),
               transitionBuilder: (child, animation) {
                 return FadeTransition(
@@ -46,7 +45,7 @@ Widget build(
                 bdController,
                 currentProvince,
                 onSelectProvince,
-                snapshot.data,
+                value.weatherState,
               ),
             ),
           ),
@@ -380,7 +379,13 @@ Widget _buildBackLayer(
 Widget _buildError() {
   return Center(
     child: Column(
-      children: [Text(errorLabel)],
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          errorLabel,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        )
+      ],
     ),
   );
 }

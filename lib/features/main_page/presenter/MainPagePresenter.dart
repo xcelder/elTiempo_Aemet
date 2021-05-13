@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:aemet_radar/features/main_page/MainPageView.dart';
 import 'package:aemet_radar/preferences/RadarPreferences.dart';
 import 'package:aemet_radar/features/main_page/state/CurrentWeatherState.dart';
@@ -37,9 +35,5 @@ class MainPagePresenter {
   void savePreferredProvince(Province selectedProvince) async {
     final radarPreferences = await RadarPreferences.instance();
     radarPreferences.saveProvinceRadar(selectedProvince);
-  }
-
-  void dispose() {
-    viewState.dispose();
   }
 }

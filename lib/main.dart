@@ -23,17 +23,17 @@ class MyApp extends StatelessWidget {
           // is not restarted.
           fontFamily: "ProductSans",
           textTheme: TextTheme(
-            body1: TextStyle(
+            bodyText1: TextStyle(
               fontFamily: "ProductSans",
             ),
-            body2: TextStyle(
+            bodyText2: TextStyle(
               fontFamily: "ProductSans",
             ),
-            display1: TextStyle(
+            headline4: TextStyle(
               fontFamily: "ProductSans",
             ),
           ),
-          accentTextTheme: TextTheme(body2: TextStyle(color: Colors.white)),
+          accentTextTheme: TextTheme(bodyText2: TextStyle(color: Colors.white)),
           inputDecorationTheme: InputDecorationTheme(
               border: OutlineInputBorder(),
               labelStyle: TextStyle(fontSize: 24, color: Colors.white)),

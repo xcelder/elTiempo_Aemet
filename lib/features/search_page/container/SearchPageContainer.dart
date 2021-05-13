@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:aemet_radar/features/main_page/MainPage.dart';
-import 'package:aemet_radar/features/main_page/state/CurrentWeatherState.dart';
 import 'package:aemet_radar/features/main_page/view_state/MainPageViewState.dart';
 import 'package:aemet_radar/features/search_page/pages/SearchPage.dart';
 import 'package:aemet_radar/features/search_page/router/SearchRouter.dart';
@@ -10,6 +9,7 @@ import 'package:aemet_radar/model/LocationOption.dart';
 import 'package:aemet_radar/values/AppColors.dart';
 import 'package:aemet_radar/values/Strings.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../SearchState.dart';
 
@@ -33,8 +33,8 @@ class _SearchPageContainerState extends State<SearchPageContainer> {
   void onNavigateToMainPage(LocationOption locationOption) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => MainPageViewState(
-          StreamController<CurrentWeatherState>(),
+        builder: (context) => ChangeNotifierProvider(
+          create: (context) => MainPageViewState(),
           child: MainPage(locationOption.locationCode),
         ),
       ),

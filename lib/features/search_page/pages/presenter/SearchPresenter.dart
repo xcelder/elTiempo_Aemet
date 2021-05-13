@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:aemet_radar/features/main_page/utils/TownProvider.dart' as TownProvider;
 import 'package:aemet_radar/features/search_page/view_state/SearchViewState.dart';
 import 'package:aemet_radar/service/AemetRepository.dart';

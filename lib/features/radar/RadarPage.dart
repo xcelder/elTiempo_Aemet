@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:aemet_radar/features/radar/presenter/RadarPresenter.dart';
-import 'package:aemet_radar/features/main_page/utils/CacheNetworkImageAspectRatio.dart';
 import 'package:aemet_radar/model/Province.dart';
 import 'package:aemet_radar/model/RadarImage.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +24,7 @@ class RadarPageState extends State<RadarPage> implements RadarView {
 
   PageState state = PageState.BUSY;
   bool isDataLoaded = false;
-  List<RadarImage> radarImages = List<RadarImage>();
+  List<RadarImage> radarImages = [];
   int currentImage = 0;
   bool isPlaying = false;
 
@@ -73,14 +70,6 @@ class RadarPageState extends State<RadarPage> implements RadarView {
   void _precacheImages(List<RadarImage> radarImages) async {
     radarImages.forEach((radarImage) =>
         precacheImage(Image.network(radarImage.urlImage).image, context));
-  }
-
-  void _preacacheImageAsync(RadarImage image, int waitSec) async {
-    Timer(Duration(milliseconds: ((waitSec / 4) * 1000).round()), () async {
-      final provider =
-          await networkImageResizedToMaxWidth(image, MAX_WIDTH_IMAGE);
-      precacheImage(provider, context);
-    });
   }
 
   void onReload() {

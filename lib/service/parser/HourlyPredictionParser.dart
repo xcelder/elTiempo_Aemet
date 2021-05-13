@@ -45,12 +45,11 @@ class HourlyPredictionParser
   }
 
   List<PredictionHour> _parseHours(Dia day) {
-    assert(day.everyDataHasSamePeriods());
 
     List<VientoAndRachaMax> groupedWinds = _groupByHour(day.vientoAndRachaMax);
     groupedWinds.sort((a, b) => a.periodo.compareTo(b.periodo));
 
-    List<PredictionHour> hours = List<PredictionHour>();
+    List<PredictionHour> hours = [];
 
     final dayTime = DateFormat("yyyy-MM-DDTHH:mm:ss").parse(day.fecha);
 
@@ -91,7 +90,7 @@ class HourlyPredictionParser
   List<PredictionHourRange> _parseHourRanges(Dia day) {
     assert(day.everyDataHasSameRangePeriods());
 
-    List<PredictionHourRange> predictionHourRanges = List();
+    List<PredictionHourRange> predictionHourRanges = [];
 
     final dayTime = DateFormat("yyyy-MM-DDTHH:mm:ss").parse(day.fecha);
 
@@ -126,7 +125,7 @@ class HourlyPredictionParser
   }
 
   List<VientoAndRachaMax> _groupByHour(List<VientoAndRachaMax> winds) {
-    List<VientoAndRachaMax> grouped = List<VientoAndRachaMax>();
+    List<VientoAndRachaMax> grouped = [];
 
     winds.forEach((wind) {
       if (grouped.any((item) => item.periodo == wind.periodo)) {

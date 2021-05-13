@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 
 const double _kFrontHeadingHeight = 32.0; // front layer beveled rectangle
 const double _kFrontClosedHeight = 92.0; // front layer height when closed
-const double _kBackAppBarHeight = 56.0; // back layer (options) appbar height
 
 // The size of the front layer heading's left and right beveled corners.
 final Animatable<BorderRadius> _kFrontHeadingBevelRadius = BorderRadiusTween(
@@ -79,104 +78,6 @@ class _TappableWhileStatusIsState extends State<_TappableWhileStatusIs> {
       );
     }
     return child;
-  }
-}
-
-class _CrossFadeTransition extends AnimatedWidget {
-  const _CrossFadeTransition({
-    Key key,
-    this.alignment = Alignment.center,
-    Animation<double> progress,
-    this.child0,
-    this.child1,
-  }) : super(key: key, listenable: progress);
-
-  final AlignmentGeometry alignment;
-  final Widget child0;
-  final Widget child1;
-
-  @override
-  Widget build(BuildContext context) {
-    final Animation<double> progress = listenable;
-
-    final double opacity1 = CurvedAnimation(
-      parent: ReverseAnimation(progress),
-      curve: const Interval(0.5, 1.0),
-    ).value;
-
-    final double opacity2 = CurvedAnimation(
-      parent: progress,
-      curve: const Interval(0.5, 1.0),
-    ).value;
-
-    return Stack(
-      alignment: alignment,
-      children: <Widget>[
-        Opacity(
-          opacity: opacity1,
-          child: Semantics(
-            scopesRoute: true,
-            explicitChildNodes: true,
-            child: child1,
-          ),
-        ),
-        Opacity(
-          opacity: opacity2,
-          child: Semantics(
-            scopesRoute: true,
-            explicitChildNodes: true,
-            child: child0,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BackAppBar extends StatelessWidget {
-  const _BackAppBar({
-    Key key,
-    this.leading = const SizedBox(width: 56.0),
-    @required this.title,
-    this.trailing,
-  })  : assert(leading != null),
-        assert(title != null),
-        super(key: key);
-
-  final Widget leading;
-  final Widget title;
-  final Widget trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return IconTheme.merge(
-      data: theme.primaryIconTheme,
-      child: DefaultTextStyle(
-        style: theme.primaryTextTheme.title,
-        child: SizedBox(
-          height: _kBackAppBarHeight,
-          child: Row(
-            children: <Widget>[
-              Container(
-                alignment: Alignment.center,
-                width: 56.0,
-                child: leading,
-              ),
-              Expanded(
-                child: title,
-              ),
-              if (trailing != null)
-                Container(
-                  alignment: Alignment.center,
-                  width: 56.0,
-                  child: trailing,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
